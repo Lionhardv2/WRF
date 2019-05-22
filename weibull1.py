@@ -8,7 +8,7 @@ import numpy as np
 #******************************************************************
 #					Datos observados
 #******************************************************************
-archivo = "20150919-20180828.csv"
+archivo = "20150919-20180828.csv"   # direccion del archivo csv
 #archivo = '/home/opti3040a/Dropbox/CMSN/01WRF_Project/01_QMet/2017_2018Q_UTC.csv'
 df = pd.read_csv(archivo,  sep=';')
 print(df.head())
@@ -46,3 +46,18 @@ print(df[column].dtype)
 df[column] = df[column].astype("float")
 print(df[column].dtype)
 print(df[column].head())
+#******************************************************************
+#			filtrando los datos por fecha
+#******************************************************************
+df['concatenado'] = df['Date']+ " " + df["Time"]
+print(df['concatenado'].head())
+df["concatenado"] = pd.to_datetime(df["concatenado"])
+print(df["concatenado"].head())
+df.rename(columns = {'concatenado':"Fecha"}, inplace = True)
+print(df.head(10))
+# Filtrando Fecha cada 10 minutos
+print(df.Fecha.dt.minute.head(10))
+# Generando la mascara de intervalos de 10 minutos
+Int_10 = df.Fecha.dt.minute % 10 == 0
+print(df.loc[Int_10].reset_index())
+
