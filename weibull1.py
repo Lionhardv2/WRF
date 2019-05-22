@@ -4,7 +4,6 @@
 import weibull 
 import pandas as pd
 import numpy as np
-
 #******************************************************************
 #					Datos observados
 #******************************************************************
@@ -59,5 +58,11 @@ print(df.head(10))
 print(df.Fecha.dt.minute.head(10))
 # Generando la mascara de intervalos de 10 minutos
 Int_10 = df.Fecha.dt.minute % 10 == 0
-print(df.loc[Int_10].reset_index())
-
+print(df.loc[Int_10].reset_index().drop(['Date','Time','index'], axis=1))
+df2 = df.loc[Int_10].reset_index().drop(['Date','Time','index'], axis=1)
+print(df2.info())
+print(df2['Fecha'].head())
+#******************************************************************
+#		Guardando en un Archivo.csv los datos filtrados
+#******************************************************************
+df2.to_csv(path_or_buf = "Qollpana150914-270818.csv")
