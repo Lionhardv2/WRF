@@ -39,6 +39,8 @@ for i in Anios:
     mes = range(min(aa), max(aa)+1)
     for j in mes:
         print(j)
+        plt.subplots_adjust(hspace=0.8)
+        plt.subplot(211)
         mask = dfvar.Fecha.dt.month == j
         dfaux = dfvar.loc[mask]
         analysis = weibull.Analysis(dfaux["Viento - Velocidad (m/s)"], unit = "m/s")
@@ -52,11 +54,11 @@ for i in Anios:
         scale = count.max()/weib(x,escala ,forma).max()
         #print(weib(x,escala,forma)*scale)
         plt.plot(x, weib(x,escala,forma)*scale)
+        plt.xlabel("Vel. Viento [m/s]")
+        plt.ylabel("Probabilidad")
+        plt.title("Distribucion de Weibull")
         # j = mes
         # i = anio
-        plt.savefig("AnaWei/Weibpdf"+str(j)+str(i)+".png")
-        plt.close()
-        #plt.show()
         #******************************************************************
         #					Analisis de corelacion 
         #******************************************************************
@@ -65,6 +67,7 @@ for i in Anios:
         dfaux = dfaux.reset_index(drop=True)
         dfaux['Proba'] = (dfaux.index - dfaux.index[0]+1) / (len((dfaux.index))+1)
         #print(dfaux)
+        plt.subplot(212)
         dfaux['Weibull'] = weibull_inv(dfaux['Proba'])
         w = dfaux['Weibull']
         lnsw = np.log(dfaux['Viento - Velocidad (m/s)'])
@@ -72,7 +75,6 @@ for i in Anios:
         sigma0 = np.exp(- lnsm0 / m)
         print('m=', m)
         print('sigma0=',sigma0)
-        plt.figure()
         plt.plot(lnsw,w)
         plt.plot(lnsw,w,'*')
         x = lnsw
@@ -86,10 +88,10 @@ for i in Anios:
         rms = sqrt(mean_squared_error(y, w))
         print("RMSE :", rms)
         plt.grid()
-        plt.ylabel('log(-log(1 - Probability of fracture))')
-        plt.title("Weibull Analysis of experiment data")
+        plt.ylabel('log(-log(1 - Probability of Viento))')
+        plt.title("Comparativa del Analisis de Weibulls")
         plt.text(0,1,r"$r^2 =$"+"{0:.4f}".format(r))
-        plt.text(0,2,r"$RMSE =$"+"{0:.4f}".format(rms))
+        plt.text(0,0,r"$RMSE =$"+"{0:.4f}".format(rms))
         plt.savefig("AnaWei/WeibCorr"+str(j)+str(i)+".png")
         plt.close()
-        #plt.show()
+        
