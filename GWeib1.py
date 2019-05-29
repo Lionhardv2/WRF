@@ -6,7 +6,7 @@ from scipy import stats
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 import seaborn as sns; sns.set(color_codes=True)
-
+from scipy.stats import norm,rayleigh
 Anios = [2015, 2016, 2017, 2018]
 
 Archivo = 'Qollpana150914-270818.csv'
@@ -26,8 +26,8 @@ mask = df.Fecha.dt.year == Anios[3]
 df18 = df.loc[mask]
 mes = range(1,13)
 #plt.subplots_adjust(hspace=0.8)
-mask = df15.Fecha.dt.month == 12
-dfaux = df15.loc[mask]
+mask = df17.Fecha.dt.month == 4
+dfaux = df17.loc[mask]
 analysis = weibull.Analysis(dfaux["Viento - Velocidad (m/s)"], unit = "m/")
 analysis.fit(method='mle')
 # Capturando los parametros de weibull
@@ -72,6 +72,17 @@ print("r = ",r)
 sns.regplot(x="Acum Real", y="Acum Weibull", data=dfstat)
 plt.text(0,0.9,r"$r^2 =$"+"{0:.4f}".format(r))
 plt.text(0,0.8,r"$RMSE =$"+"{0:.4f}".format(rms))
-plt.show()
+plt.hist(dfaux["Viento - Velocidad (m/s)"],bins=range(0,int(dfaux["Viento - Velocidad (m/s)"].max()+2)))
 
+plt.show()
+plt.close()
+
+#******************************************************************
+#					Distribucion de Rayleigh
+#******************************************************************
+param = rayleigh.fit(dfaux["Viento - Velocidad (m/s)"]) # distribution fitting
+pdf_fitted = rayleigh.pdf(x,loc=param[0],scale=param[1])
+plt.plot(x,pdf_fitted*scale)
+plt.hist(dfaux["Viento - Velocidad (m/s)"],bins=range(0,int(dfaux["Viento - Velocidad (m/s)"].max()+2)))
+plt.show()
 
