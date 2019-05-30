@@ -20,6 +20,14 @@ if path.exists("AnaWei"):
 path_act=os.getcwd()
 os.mkdir("AnaWei", 0o777)
 
+#   Verifying whether exits this Directory
+print(path.exists("TablasEs"))
+if path.exists("TablasEs"):
+    rmtree("TablasEs")
+
+# Creating Directory for files.png
+path_act=os.getcwd()
+os.mkdir("TablasEs", 0o777)
 
 #   Verifying whether exits this Directory
 print(path.exists("Stat"))
@@ -31,7 +39,14 @@ path_act=os.getcwd()
 os.mkdir("Stat", 0o777)
 
 Anios = [2015, 2016, 2017, 2018]
-
+indice = 0
+fechasM = ["" for x in range(0,36)]
+CorrM = np.zeros(36)
+corrW = np.zeros(36)
+WeibForm = np.zeros(36)
+WeibEscal = np.zeros(36)
+c = np.zeros(36)
+d = np.zeros(36)
 Archivo = 'Qollpana150914-270818.csv'
 df = pd.read_csv(Archivo, index_col= False)
 df["Fecha"] = pd.to_datetime(df["Fecha"])
@@ -103,6 +118,7 @@ for i in Anios:
         print('intervalo es :',len(Intervalo))
         plt.subplot(212)
         r, p = stats.pearsonr(probAcReal,probAcWeib)
+        rR, pR = stats.pearsonr(probAcReal,probAcWeib)
         rms = sqrt(mean_squared_error(probAcReal, probAcWeib))
         StatData = { 'Intervalo V [m/s]': Intervalo[:len(probObs)],
                 'Real': probObs,
@@ -114,13 +130,50 @@ for i in Anios:
                 }
 
         dfstat = pd.DataFrame(StatData,columns= ['Intervalo V [m/s]','Real', 'Acum Real','Weibull', 'Acum Weibull','Rayleigh', 'Acum Rayleigh'])
-        print (dfstat)
+        #print (dfstat)
         print("r = ",r)
         sns.regplot(x="Acum Real", y="Acum Weibull", data=dfstat)
         plt.text(0.2,0.9,r"$r^2 =$"+"{0:.4f}".format(r),fontsize = 7)
         plt.text(0.2,0.7,r"$RMSE =$"+"{0:.4f}".format(rms),fontsize = 7)
-        plt.savefig("AnaWei/WeibCorr"+str(j)+str(i)+".png",dpi = 300)
-        dfstat.to_csv(path_or_buf = "Stat/Stat"+str(j)+str(i) +".csv")
+        #plt.savefig("AnaWei/WeibCorr"+str(j)+str(i)+".png",dpi = 300)
+        #dfstat.to_csv(path_or_buf = "Stat/Stat"+str(j)+str(i) +".csv")
         plt.close()
+        
+        # Lista Por Fechas Datos 
 
+        print(dfaux.iloc[1,-1])
+        #print(dfaux[0,1])
+        # Lista Por coeficiente de correlacion
+        corrW[indice] = r
+        CorrM[indice] = rR
+        print(CorrM[indice])
+        fechasM[indice] =str(dfaux.iloc[1,-1])  
+        #print('fechaa: ',fechasM[indice])
+        a,b,c[indice],d[indice],e,f = stats.describe(dfaux['Viento - Velocidad (m/s)'])
+        #print(stats.describe(dfaux['Viento - Velocidad (m/s)']))
+        # Guardar Parametros de weibull
+        WeibForm[indice] = forma
+        WeibEscal[indice] = escala
+        indice = indice +1 
 
+#******************************************************************
+#   Valores de Estadisticos de Viento a Diferentes meses
+#******************************************************************
+print(CorrM)
+print(fechasM)
+print(c)
+print(d)
+print(WeibEscal)
+print(WeibForm)
+print(corrW)
+StatData = {    'Fecha': fechasM,
+                'V mean': c,
+                'V std': d,
+                'c': WeibForm,
+                'k': WeibEscal,
+                'RWeibull': corrW,
+                'RRayleigh': CorrM
+                }
+dfstat = pd.DataFrame(StatData,columns= ['Fecha','V mean', 'V std','c', 'k','RWeibull', 'RRayleigh'])
+print(dfstat.head())
+dfstat.to_csv(path_or_buf = "TablasEs/StatResumen.csv")
