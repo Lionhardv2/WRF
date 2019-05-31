@@ -36,9 +36,14 @@ escala = analysis.stats[6]
 #plt.subplot(211)
 count, bins, ignored = plt.hist(dfaux["Viento - Velocidad (m/s)"],bins=range(0,int(dfaux["Viento - Velocidad (m/s)"].max()+2)))
 x = np.linspace(min(dfaux["Viento - Velocidad (m/s)"]),max(dfaux["Viento - Velocidad (m/s)"]),sum(count))
+# Parametros Rayleigh
+# Añadiendo la distribucion de Rayleigh
+param = rayleigh.fit(dfaux["Viento - Velocidad (m/s)"]) # distribution fitting
+pdf_fitted = rayleigh.pdf(x,loc=param[0],scale=param[1])
 scale = count.max()/weib(x,escala ,forma).max()
 ab = np.arange(0,int(dfaux["Viento - Velocidad (m/s)"].max()+2))
 plt.plot(ab, weib(ab,escala,forma)*scale)
+plt.plot(x,pdf_fitted*scale,'*')    # incorporando RAyleigh
 plt.xlabel("Vel. Viento [m/s]")
 plt.ylabel("Probabilidad")
 plt.title("Distribucion de Weibull")
@@ -48,13 +53,20 @@ plt.title("Distribucion de Weibull")
 histo, binEdges = np.histogram(dfaux['Viento - Velocidad (m/s)'],bins=range(0,int(dfaux["Viento - Velocidad (m/s)"].max()+2)))
 print(histo)
 print(binEdges)
+print(weib(ab[1:],escala,forma)*scale)
 probObs = histo/sum(histo)
 print(probObs)
-probWeib = ab[1:]/sum(ab[1:])
+probWeib = weib(ab[1:],escala,forma)*scale/sum(weib(ab[1:],escala,forma)*scale)
 print(probWeib)
 probAcWeib = np.cumsum(probWeib)
 print(probAcWeib)
 probAcReal = np.cumsum(probObs)
+# Añadiendo la distribucion de Rayleigh
+param = rayleigh.fit(dfaux["Viento - Velocidad (m/s)"]) # distribution fitting
+pdf_fitted = rayleigh.pdf(ab[1:],loc=param[0],scale=param[1])
+probRay = pdf_fitted*scale/sum(pdf_fitted*scale)
+print(probRay)
+probAcRay = np.cumsum(probRay)
 
 plt.show()
 plt.close()
@@ -63,17 +75,20 @@ rms = sqrt(mean_squared_error(probAcReal, probAcWeib))
 StatData = {'Real': probObs,
         'Acum Real': probAcReal,
         'Weibull': probWeib,
-        'Acum Weibull': probAcWeib
+        'Acum Weibull': probAcWeib,
+        'Rayleigh': probRay,
+        'Acum Rayleigh': probAcRay
         }
 
-dfstat = pd.DataFrame(StatData,columns= ['Real', 'Acum Real','Weibull', 'Acum Weibull'])
+dfstat = pd.DataFrame(StatData,columns= ['Real', 'Acum Real','Weibull', 'Acum Weibull','Rayleigh', 'Acum Rayleigh'])
 print (dfstat)
 print("r = ",r)
 sns.regplot(x="Acum Real", y="Acum Weibull", data=dfstat)
 plt.text(0,0.9,r"$r^2 =$"+"{0:.4f}".format(r))
 plt.text(0,0.8,r"$RMSE =$"+"{0:.4f}".format(rms))
 plt.hist(dfaux["Viento - Velocidad (m/s)"],bins=range(0,int(dfaux["Viento - Velocidad (m/s)"].max()+2)))
-
+r, p = stats.pearsonr(probAcReal,probAcRay)
+print("Rayleigh r = ",r)
 plt.show()
 plt.close()
 
