@@ -55,7 +55,7 @@ for i in Anios:
         #print(weib(x,escala,forma)*scale)
         plt.plot(x, weib(x,escala,forma)*scale)
         plt.xlabel("Vel. Viento [m/s]")
-        plt.ylabel("Probabilidad")
+        plt.ylabel("Distribucion de frecuencia")
         plt.title("Distribucion de Weibull")
         # j = mes
         # i = anio
